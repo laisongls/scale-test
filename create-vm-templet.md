@@ -7,7 +7,7 @@ cp CentOS-7-x86_64-GenericCloud.qcow2 vminit.qcow2
 
 ### Pre-settings for root passwd and disk size
 virt-customize -a vminit.qcow2 --root-password password:root
-qemu-img resize vminit.qcow2 +120G
+qemu-img resize vminit.qcow2 +36G
 
 ### Start VM
 virt-install --os-variant centos7.0 \
