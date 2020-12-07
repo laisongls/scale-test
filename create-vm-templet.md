@@ -54,7 +54,7 @@ xfs_growfs /
 df -h
 ```
 
-### Copy automation scripts, oc, kubectl and kind into the VM path
+### Copy oc, kubectl and kind into the VM path
 
 ### Install docker on VM
 ```
