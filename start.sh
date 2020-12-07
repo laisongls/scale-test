@@ -28,6 +28,12 @@ else
   echo "#expect has been installed."
 fi
 
+# Clean existed vm hosts file
+if [ -f "vmhosts" ];
+then
+  rm -f vmhosts
+fi
+
 #-------------------------------------------------------
 # Prepare VMs - need to set {range} for how many VMs will 
 # be created on a BM, the number is used for VM hostname.
@@ -54,11 +60,6 @@ do
 done
 
 vmipaddr=$(grep $vmmac /proc/net/arp |awk '{print $1}')
-
-if [ -f "vmhosts" ];
-then
-  rm -f vmhosts
-fi
 
 echo "$t $vmipaddr" >> vmhosts
 
