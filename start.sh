@@ -13,8 +13,8 @@ hubclusterurl="api.slai-ocp46-aws.dev09.red-chesterfield.com:6443"
 
 # Need to set
 # Only 100 pulls per six hours without authentication
-dockeruser=laisongls
-dockerpasswd=Tang3zang
+dockeruser=
+dockerpasswd=
 
 # 5 kind clusters on each vm
 clusterrange="1..5"
