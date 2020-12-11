@@ -8,17 +8,19 @@
 
 # Need to set
 # Hub cluster info
-hubclusterpasswd="T8JSo-YhWpX-FrSXC-33vGr"
 hubclusterurl="api.slai-ocp46-aws.dev09.red-chesterfield.com:6443"
+hubclusterpasswd="T8JSo-YhWpX-FrSXC-33vGr"
 
 # Need to set
 # Only 100 pulls per six hours without authentication
-dockeruser=
-dockerpasswd=
+dockeruser=laisongls
+dockerpasswd=Tang3zang
 
 # 5 kind clusters on each vm
 clusterrange="1..5"
 
+
+function createVMs() {
 # Install expect for interactive actions
 echo "#Checking expect..."
 if [ ! -e "/usr/bin/expect" ]
@@ -38,7 +40,7 @@ fi
 # Prepare VMs - need to set {range} for how many VMs will 
 # be created on a BM, the number is used for VM hostname.
 #-------------------------------------------------------
-for t in {11..20}
+for t in {01..10}
 do
 
 # Clone vm
@@ -51,7 +53,7 @@ sleep 20
 
 # Get vm ip
 echo "#Setting up vm..."
-vmmac=$(virsh dumpxml vmtest |grep 'mac address' |sed "s/'/ /g" |awk '{print $3}')
+vmmac=$(virsh dumpxml vm$t |grep 'mac address' |sed "s/'/ /g" |awk '{print $3}')
 
 while [ -z "$(grep $vmmac /proc/net/arp |awk '{print $1}')" ]
 do
@@ -76,7 +78,6 @@ expect {
         password: {send $vmpasswd\n};
 }
 set timeout 10;
-send exit\n;
 expect eof
 EOFNonPasswd
 
@@ -86,11 +87,13 @@ ssh $vmipaddr "hostnamectl set-hostname vm$t"
 done
 printf "\n"
 echo "#All VMs are ready."
+}
 
 
 #-------------------------------------------------------
 # Create & register & import kind clusters
 #-------------------------------------------------------
+function createManagedClusters() {
 echo "#Setting up managed clusters on the VMs..."
 cat vmhosts|while read line
 do
@@ -216,7 +219,7 @@ echo "#Create kind clusters on vm$vmid..."
 printf "\n"
 chmod 755 tmp-01-create-cluster.sh
 scp tmp-01-create-cluster.sh $vmip:/root/01-create-cluster.sh
-ssh $vmip "/root/01-create-cluster.sh"
+ssh $vmip "/root/01-create-cluster.sh" < /dev/null
 
 # Register clusters to hub
 echo "#########################################"
@@ -224,7 +227,7 @@ echo "#Register managed clusters for vm$vmid..."
 printf "\n"
 chmod 755 tmp-02-register-cluster.sh
 scp tmp-02-register-cluster.sh $vmip:/root/02-register-cluster.sh
-ssh $vmip "/root/02-register-cluster.sh"
+ssh $vmip "/root/02-register-cluster.sh" < /dev/null
 
 # Import managed clusters
 echo "#########################################"
@@ -232,20 +235,25 @@ echo "#Import managed clusters for vm$vmid..."
 printf "\n"
 chmod 755 tmp-03-import-cluster.sh
 scp tmp-03-import-cluster.sh $vmip:/root/03-import-cluster.sh
-ssh $vmip "/root/03-import-cluster.sh"
+ssh $vmip "/root/03-import-cluster.sh" < /dev/null
 
 # Clean the temp scripts
-ssh $vmip "rm -f /root/01-create-cluster.sh"
-ssh $vmip "rm -f /root/02-register-cluster.sh"
-ssh $vmip "rm -f /root/03-import-cluster.sh"
-ssh $vmip "rm -f /root/kind.yaml"
-ssh $vmip "rm -f /root/temp-import-secret.json"
-ssh $vmip "rm -f /root/managed-cluster-klusterlet-crd.yaml"
-ssh $vmip "rm -f /root/managed-cluster-import.yaml"
+ssh $vmip "rm -f /root/01-create-cluster.sh" < /dev/null
+ssh $vmip "rm -f /root/02-register-cluster.sh" < /dev/null
+ssh $vmip "rm -f /root/03-import-cluster.sh" < /dev/null
+ssh $vmip "rm -f /root/kind.yaml" < /dev/null
+ssh $vmip "rm -f /root/temp-import-secret.json" < /dev/null
+ssh $vmip "rm -f /root/managed-cluster-klusterlet-crd.yaml" < /dev/null
+ssh $vmip "rm -f /root/managed-cluster-import.yaml" < /dev/null
 
 rm -f tmp-01-create-cluster.sh
 rm -f tmp-02-register-cluster.sh
 rm -f tmp-03-import-cluster.sh
 
 done
+}
+
+#------------- main -------------
+createVMs
+#createManagedClusters
 
